@@ -1,0 +1,12 @@
+<component name="libraryTable">
+  <library name="Gradle: ch.ielse:switchbutton:1.0.1@aar">
+    <CLASSES>
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/switchbutton-1.0.1.aar/562b1948cbedd71341f3fdd4460a195c/res" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/switchbutton-1.0.1.aar/562b1948cbedd71341f3fdd4460a195c/jars/classes.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/ch.ielse/switchbutton/1.0.1/d5fafc4cdf7cbe4add874add1024faeea3519b57/switchbutton-1.0.1-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

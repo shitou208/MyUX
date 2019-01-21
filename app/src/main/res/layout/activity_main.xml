@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:paddingEnd="60dp"
+    android:paddingStart="60dp"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TableRow
+        android:paddingTop="40dp"
+        android:layout_weight="1"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"/>
+
+    <Button
+        android:visibility="invisible"
+        android:id="@+id/complete_ui_widgets"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="14sp"
+        android:layout_margin="10dp"
+        android:padding="14dp"
+        android:textColor="@color/background_blue"
+        android:text="Complete Demo of Default UI Widgets"/>
+    <Button
+        android:visibility="invisible"
+        android:id="@+id/bt_customized_ui_widgets"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="14sp"
+        android:layout_margin="10dp"
+        android:padding="14dp"
+        android:textColor="@color/background_blue"
+        android:text="Demo on Customized UI Widgets"/>
+    <Button
+        android:visibility="invisible"
+        android:id="@+id/bt_map_widget"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="14sp"
+        android:layout_margin="10dp"
+        android:padding="14dp"
+        android:textColor="@color/background_blue"
+        android:text="Map Widget Demo"/>
+
+    <TableRow
+        android:layout_weight="1"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"/>
+
+    <EditText
+        android:id="@+id/edittext_bridge_ip"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:background="@color/gray"
+        android:digits="0123456789.\n"
+        android:gravity="center"
+        android:hint="@string/wsbridge_ip"
+        android:imeOptions="actionDone"
+        android:maxLength="15"
+        android:maxLines="1"
+        android:padding="2dp"
+        android:textColor="@color/white"
+        android:textColorHint="@android:color/white"
+        android:textSize="15sp"
+        android:visibility="invisible"
+        />
+
+    <TextView
+        android:id="@+id/version"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="14sp"
+        android:layout_margin="10dp"
+        android:textColor="@color/white"
+        android:gravity="center"
+        tools:text="Version"/>
+
+</TableLayout>

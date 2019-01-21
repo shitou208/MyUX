@@ -1,0 +1,74 @@
+apply plugin: 'com.android.application'
+
+repositories {
+    mavenLocal()
+}
+
+android {
+    compileSdkVersion 27
+    buildToolsVersion '27.0.3'
+    defaultConfig {
+        applicationId "com.dji.ux.sample"
+        minSdkVersion 16
+        targetSdkVersion 27
+        multiDexEnabled true
+        vectorDrawables.useSupportLibrary = true
+        ndk {
+            // On x86 devices that run Android API 23 or above, if the application is targeted with API 23 or
+            // above, FFmpeg lib might lead to runtime crashes or warnings.
+            abiFilters 'armeabi-v7a', 'x86', 'arm64-v8a'
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    dexOptions {
+        javaMaxHeapSize "3g"
+    }
+    lintOptions{
+        abortOnError false
+    }
+    packagingOptions{
+        doNotStrip "*/*/libdjivideo.so"
+        doNotStrip "*/*/libSDKRelativeJNI.so"
+        doNotStrip "*/*/libFlyForbid.so"
+        doNotStrip "*/*/libduml_vision_bokeh.so"
+        doNotStrip "*/*/libyuv2.so"
+        doNotStrip "*/*/libGroudStation.so"
+        doNotStrip "*/*/libFRCorkscrew.so"
+        doNotStrip "*/*/libUpgradeVerify.so"
+        doNotStrip "*/*/libFR.so"
+
+        pickFirst 'lib/*/libstlport_shared.so'
+        pickFirst 'lib/*/libRoadLineRebuildAPI.so'
+        pickFirst 'lib/*/libGNaviUtils.so'
+        pickFirst 'lib/*/libGNaviMapex.so'
+        pickFirst 'lib/*/libGNaviData.so'
+        pickFirst 'lib/*/libGNaviMap.so'
+        pickFirst 'lib/*/libGNaviSearch.so'
+        exclude 'META-INF/rxjava.properties'
+    }
+}
+
+dependencies {
+    implementation ('com.dji:dji-uxsdk:4.8.1', {
+        // Uncomment the following line if your app does not need Anti Distortion for
+        // Mavic 2 Pro and Mavic 2 Zoom. It will greatly reducing the size of the APK:
+        // exclude module: 'library-anti-distortion'
+    })
+    compileOnly ('com.dji:dji-sdk-provided:4.8.1')
+
+    implementation 'com.amap.api:map2d:5.2.0'
+    implementation 'com.amap.api:3dmap:5.5.0'
+    implementation 'com.amap.api:search:5.5.0'
+    implementation 'com.amap.api:location:3.6.1'
+    compile 'com.yarolegovich:lovely-dialog:1.1.0'
+    compile 'ch.ielse:switchbutton:1.0.1'
+
+    //HERE maps
+    implementation files('libs/HERE-sdk.aar')
+
+}
