@@ -63,41 +63,41 @@ public class Client {
             public void onUpdate(@NonNull FlightControllerState flightControllerState) {
 
                 JSONObject GPSJson = new JSONObject();
-                String write_txt = "-- "+MainActivity.gettime()+" --"+"\n";
+                //String write_txt = "-- "+MainActivity.gettime()+" --"+"\n";
                 try {
-                    String temp1 = String.valueOf(flightControllerState.getVelocityX())+","+String.valueOf(flightControllerState.getVelocityY())+","+String.valueOf(flightControllerState.getVelocityZ())+"\n";
-                    write_txt+=temp1;
-                    if (isRecording){
-                            MainActivity.writetxt(write_txt,true);
-                    }
-//                    if(flightControllerState.getGPSSignalLevel() != null) {
-//                        GPSSignalLevel gpsLevel = flightControllerState.getGPSSignalLevel();
-//                        GPSJson.put("gpsLevel", gpsLevel.toString());
+//                    String temp1 = String.valueOf(flightControllerState.getVelocityX())+","+String.valueOf(flightControllerState.getVelocityY())+","+String.valueOf(flightControllerState.getVelocityZ())+"\n";
+//                    write_txt+=temp1;
+//                    if (isRecording){
+//                            MainActivity.writetxt(write_txt,true);
 //                    }
-//                    if(flightControllerState.getAircraftLocation() != null) {
-//                        LocationCoordinate3D location = flightControllerState.getAircraftLocation();
-//                        GPSJson.put("longitude", String.valueOf(location.getLongitude()));
-//                        GPSJson.put("latitude", String.valueOf(location.getLatitude()));
-//                        GPSJson.put("altitude", String.valueOf(location.getAltitude()));
+                    if(flightControllerState.getGPSSignalLevel() != null) {
+                        GPSSignalLevel gpsLevel = flightControllerState.getGPSSignalLevel();
+                        GPSJson.put("gpsLevel", gpsLevel.toString());
+                    }
+                    if(flightControllerState.getAircraftLocation() != null) {
+                        LocationCoordinate3D location = flightControllerState.getAircraftLocation();
+                        GPSJson.put("longitude", String.valueOf(location.getLongitude()));
+                        GPSJson.put("latitude", String.valueOf(location.getLatitude()));
+                        GPSJson.put("altitude", String.valueOf(location.getAltitude()));
 //                        String temp2 = "longitude:"+String.valueOf(location.getLongitude())+",latitude:"+String.valueOf(location.getLatitude())+",altitude:"+String.valueOf(location.getAltitude())+"\n";
 //                        write_txt+=temp2;
 //                        if (isRecording){
 //                            MainActivity.writetxt(write_txt,true);
 //                        }
-//                    }
-//                    if(flightControllerState.getAttitude() != null) {
-//                        Attitude attitude = flightControllerState.getAttitude();
-//                        GPSJson.put("pitch", String.valueOf(attitude.pitch));
-//                        GPSJson.put("roll", String.valueOf(attitude.roll));
-//                        GPSJson.put("yaw", String.valueOf(attitude.yaw));
-//                    }
-//
-//                    GPSJson.put("velocityX", String.valueOf(flightControllerState.getVelocityX()));
-//                    GPSJson.put("velocityY", String.valueOf(flightControllerState.getVelocityY()));
-//                    GPSJson.put("velocityZ", String.valueOf(flightControllerState.getVelocityZ()));
-//
-//                    // Update the values in GPS key
-//                    jsonObject.put("GPS", GPSJson);
+                    }
+                    if(flightControllerState.getAttitude() != null) {
+                        Attitude attitude = flightControllerState.getAttitude();
+                        GPSJson.put("pitch", String.valueOf(attitude.pitch));
+                        GPSJson.put("roll", String.valueOf(attitude.roll));
+                        GPSJson.put("yaw", String.valueOf(attitude.yaw));
+                    }
+
+                    GPSJson.put("velocityX", String.valueOf(flightControllerState.getVelocityX()));
+                    GPSJson.put("velocityY", String.valueOf(flightControllerState.getVelocityY()));
+                    GPSJson.put("velocityZ", String.valueOf(flightControllerState.getVelocityZ()));
+
+                    // Update the values in GPS key
+                    jsonObject.put("GPS", GPSJson);
                 }
                 catch (Exception e) {
                     e.printStackTrace();
@@ -105,47 +105,47 @@ public class Client {
             }
         });
 
-//        List<Battery> batteries = mProduct.getBatteries();
-//        for(final Battery battery : batteries) {
-//            battery.setStateCallback(new BatteryState.Callback() {
-//                @Override
-//                public void onUpdate(BatteryState batteryState) {
-//                    JSONObject batteryJson = new JSONObject();
-//                    try {
-//                        batteryJson.put("BatteryEnergyRemainingPercent", batteryState.getChargeRemainingInPercent());
-//                        batteryJson.put("Voltage", batteryState.getVoltage());
-//                        batteryJson.put("Current", batteryState.getCurrent());
-//
-//                        // Update the values in Battery key
-//                        jsonObject.put("Battery" + battery.getIndex(), batteryJson);
-//                    }
-//                    catch (JSONException e) {
-//                        e.printStackTrace();
-//                    }
-//                }
-//            });
-//        }
+        List<Battery> batteries = mProduct.getBatteries();
+        for(final Battery battery : batteries) {
+            battery.setStateCallback(new BatteryState.Callback() {
+                @Override
+                public void onUpdate(BatteryState batteryState) {
+                    JSONObject batteryJson = new JSONObject();
+                    try {
+                        batteryJson.put("BatteryEnergyRemainingPercent", batteryState.getChargeRemainingInPercent());
+                        batteryJson.put("Voltage", batteryState.getVoltage());
+                        batteryJson.put("Current", batteryState.getCurrent());
 
-//        mProduct.getGimbal().setStateCallback(new GimbalState.Callback() {
-//            @Override
-//            public void onUpdate(@NonNull GimbalState gimbalState) {
-//                JSONObject gimbalJson = new JSONObject();
-//                try {
-//                    if(gimbalState.getAttitudeInDegrees() != null) {
-//                        dji.common.gimbal.Attitude attitude = gimbalState.getAttitudeInDegrees();
-//                        gimbalJson.put("pitch", String.valueOf(attitude.getPitch()));
-//                        gimbalJson.put("roll", String.valueOf(attitude.getRoll()));
-//                        gimbalJson.put("yaw", String.valueOf(attitude.getYaw()));
-//                    }
-//
-//                    // Update the values in Gimbal key
-//                    jsonObject.put("Gimbal", gimbalJson);
-//                }
-//                catch (JSONException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        });
+                        // Update the values in Battery key
+                        jsonObject.put("Battery" + battery.getIndex(), batteryJson);
+                    }
+                    catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+        }
+
+        mProduct.getGimbal().setStateCallback(new GimbalState.Callback() {
+            @Override
+            public void onUpdate(@NonNull GimbalState gimbalState) {
+                JSONObject gimbalJson = new JSONObject();
+                try {
+                    if(gimbalState.getAttitudeInDegrees() != null) {
+                        dji.common.gimbal.Attitude attitude = gimbalState.getAttitudeInDegrees();
+                        gimbalJson.put("pitch", String.valueOf(attitude.getPitch()));
+                        gimbalJson.put("roll", String.valueOf(attitude.getRoll()));
+                        gimbalJson.put("yaw", String.valueOf(attitude.getYaw()));
+                    }
+
+                    // Update the values in Gimbal key
+                    jsonObject.put("Gimbal", gimbalJson);
+                }
+                catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
 
         mProduct.getCamera().setSystemStateCallback(new SystemState.Callback() {
             @Override
@@ -164,7 +164,7 @@ public class Client {
                     }
 
                     // Update the values in Gimbal key
-                    //jsonObject.put("Camera", cameraJson);
+                    jsonObject.put("Camera", cameraJson);
                 }
                 catch (JSONException e) {
                     e.printStackTrace();
@@ -191,7 +191,7 @@ public class Client {
         //final JSONObject jsonObject_t = testJson();
 
         // 发送数据的线程
-        /*new Thread(new Runnable() {
+        new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -227,10 +227,10 @@ public class Client {
                 System.out.println("Send Thread run finish");
             }
         }).start();
-        System.out.println("Send thread start……");*/
+        System.out.println("Send thread start……");
 
         // 接收数据的线程
-        /*new Thread(new Runnable() {
+        new Thread(new Runnable() {
             @Override
             public void run() {
 
@@ -289,7 +289,7 @@ public class Client {
                 System.out.println("Receive Thread run finish");
             }
         }).start();
-        System.out.println("Receive thread start……");*/
+        System.out.println("Receive thread start……");
         //MainActivity.writetxt("write log test: it is ok");
     }
 
