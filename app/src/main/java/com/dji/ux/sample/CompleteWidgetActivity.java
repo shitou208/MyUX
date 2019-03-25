@@ -24,12 +24,34 @@ import com.dji.mapkit.core.models.DJILatLng;
 import com.yarolegovich.lovelydialog.LovelyStandardDialog;
 import com.yarolegovich.lovelydialog.LovelyTextInputDialog;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import ch.ielse.view.SwitchView;
+import dji.common.error.DJIError;
+import dji.common.mission.waypoint.Waypoint;
+import dji.common.mission.waypoint.WaypointAction;
+import dji.common.mission.waypoint.WaypointActionType;
+import dji.common.mission.waypoint.WaypointMission;
+import dji.common.mission.waypoint.WaypointMissionFinishedAction;
+import dji.common.mission.waypoint.WaypointMissionFlightPathMode;
+import dji.common.mission.waypoint.WaypointMissionGotoWaypointMode;
+import dji.common.mission.waypoint.WaypointMissionHeadingMode;
+import dji.common.mission.waypoint.WaypointMissionState;
+import dji.common.util.CommonCallbacks;
 import dji.sdk.base.BaseProduct;
+import dji.sdk.mission.MissionControl;
+import dji.sdk.mission.waypoint.WaypointMissionOperator;
+import dji.sdk.mission.waypoint.WaypointMissionOperatorListener;
 import dji.sdk.products.Aircraft;
 import dji.sdk.sdkmanager.DJISDKManager;
 import dji.ux.widget.FPVWidget;
 import dji.ux.widget.MapWidget;
+
+import static dji.internal.logics.CommonUtil.ONE_METER_OFFSET;
 
 /** Activity that shows all the UI elements together */
 public class CompleteWidgetActivity extends Activity {
@@ -54,13 +76,33 @@ public class CompleteWidgetActivity extends Activity {
     private Client mClient;
     private BaseProduct mProduct;
 
+    //waypoint
+    private WaypointMissionOperator waypointMissionOperator;
+    private WaypointMission mission;
+    private WaypointMissionOperatorListener listener;
+    private ArrayList myPointList;
+    private float flyAltitude;
+    private String testJson = "";
+    private AlertDialog wayPointDialog;
+
     /**Handler**/
     private Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case 1:
-                    showNormalDialog(msg.getData().getString("rece"));
+                    String sss = msg.getData().getString("rece");
+                    //showNormalDialog(sss);
+                    //MainActivity.writetxt(sss+"\n\n",true);
+                    myPointList = getWayPoints(sss);
+//                    for(int k=0;k<myPointList.size();k++){
+//                        MainActivity.writetxt(myPointList.get(k).toString()+"\n",true);
+//                        showNormalDialog(myPointList.get(k).toString());
+//                    }
+                    execute_waypoint_task(0,myPointList);//load waypoint task
+                    showNormalDialog("666");
+
+                    //showNormalDialog(msg.getData().getString("rece"));
                     break;
             }
             super.handleMessage(msg);
@@ -136,6 +178,27 @@ public class CompleteWidgetActivity extends Activity {
         });
 
         updateSecondaryVideoVisibility();
+
+        //test
+//        myPointList = getWayPoints(js);
+//        System.out.println("List: "+myPointList);
+//        for(int i = 0 ; i < myPointList.size() ; i++){
+//            System.out.println(myPointList.get(i));
+//            showNormalDialog(myPointList.get(i).toString());
+//            MainActivity.writetxt(myPointList.get(i).toString()+"\n",true);
+//        }
+        createWayPointDialog();
+        final Handler handler2 = new Handler();
+        Runnable runnable2 = new Runnable() {
+            @Override
+            public void run() {
+                handler2.postDelayed(this, 60000);
+                wayPointDialog.show();
+                //timer_tv_2.setText("Timer2-->" + getSystemTime());
+                //mytext.setText(getDatePoor());
+            }
+        };
+        handler2.postDelayed(runnable2, 60000);
     }
 
     private void onViewClick(View view) {
@@ -369,7 +432,7 @@ public class CompleteWidgetActivity extends Activity {
         }
         return false;
     }
-    private void showNormalDialog(String msg){
+    private void showNormalDialog(final String msg){
         /* @setIcon 设置对话框图标
          * @setTitle 设置对话框标题
          * @setMessage 设置对话框消息提示
@@ -379,12 +442,16 @@ public class CompleteWidgetActivity extends Activity {
                 new AlertDialog.Builder(CompleteWidgetActivity.this);
         //normalDialog.setIcon(R.drawable.icon_dialog);
         normalDialog.setTitle("Message");
-        normalDialog.setMessage(msg);
+        normalDialog.setMessage(msg.replace("666","已经Load WayPoint任务，点击确定执行！"));
         normalDialog.setPositiveButton("ok",
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         //...To-do
+                        if (msg.equals("666")){
+                            //showResultToast("执行了waypoint任务");
+                            execute_waypoint_task(1,myPointList);//start waypoint task
+                        }
                     }
                 });
 //        normalDialog.setNegativeButton("关闭",
@@ -413,6 +480,196 @@ public class CompleteWidgetActivity extends Activity {
             switchView.setVisibility(View.INVISIBLE);
             showNormalDialog("no device connected! ");
         }
+    }
+
+    //解析json数据
+    /*** json 样例
+     * {"0000Lat":29.9988,
+     *  "0000Lng":106.52332,
+     *  "0001Lat":29.3666,
+     *  "0001Lng":106.669,
+     *     .......
+     *  "baseAltitude":20.0,
+     *  "way_point_num":5
+     * }
+     * */
+    private ArrayList getWayPoints(String jsons){
+        //String[] rr = jsons.split("\\{");
+        ArrayList points = new ArrayList();
+        try {
+            JSONObject jsonObject = new JSONObject(jsons);
+            int nums = jsonObject.getInt("way_point_num");
+            flyAltitude = Float.parseFloat(jsonObject.getString("altitude"));
+            for (int i = 0; i< nums; i++) {
+                double lat = jsonObject.getDouble(i+"Lat");
+                double lng = jsonObject.getDouble(i+"Lng");
+                points.add(lat+","+lng);
+                //System.out.println("list add: "+lat+","+lng);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return points;
+    }
+
+    //执行waypoint任务
+    private void execute_waypoint_task(int flag,ArrayList pointList){ //0 load, 1 start
+        if (waypointMissionOperator == null) {
+            waypointMissionOperator = MissionControl.getInstance().getWaypointMissionOperator();
+        }
+
+        switch (flag) {
+            case 0:
+                // Example of loading a Mission
+                mission = createWaypointMission(pointList);
+                DJIError djiError = waypointMissionOperator.loadMission(mission);
+                // Example of uploading a Mission
+                if (WaypointMissionState.READY_TO_RETRY_UPLOAD.equals(waypointMissionOperator.getCurrentState())
+                        || WaypointMissionState.READY_TO_UPLOAD.equals(waypointMissionOperator.getCurrentState())) {
+                    waypointMissionOperator.uploadMission(new CommonCallbacks.CompletionCallback() {
+                        @Override
+                        public void onResult(DJIError djiError) {
+                            showResultToast(djiError.getDescription());
+                        }
+                    });
+                } else {
+                    showResultToast("Not ready!");
+                }
+                break;
+            case 1:
+                // Example of starting a Mission
+                if (mission != null) {
+                    waypointMissionOperator.startMission(new CommonCallbacks.CompletionCallback() {
+                        @Override
+                        public void onResult(DJIError djiError) {
+                            showResultToast(djiError.getDescription());
+                        }
+                    });
+                } else {
+                    showResultToast("Prepare Mission First!");
+                }
+                break;
+        }
+    }
+
+    private void proData(String s){
+        s=s.replace(" ","");
+    }
+
+    private void showResultToast(String msg){
+        Toast.makeText(CompleteWidgetActivity.this,msg,Toast.LENGTH_SHORT).show();
+    }
+
+    private WaypointMission createWaypointMission(ArrayList pointList) {
+        WaypointMission.Builder builder = new WaypointMission.Builder();
+        List<Waypoint> waypointList = new ArrayList<>();
+//        double baseLatitude = 22;
+//        double baseLongitude = 113;
+//        Object latitudeValue = KeyManager.getInstance().getValue((FlightControllerKey.create(HOME_LOCATION_LATITUDE)));
+//        Object longitudeValue =
+//                KeyManager.getInstance().getValue((FlightControllerKey.create(HOME_LOCATION_LONGITUDE)));
+//        if (latitudeValue != null && latitudeValue instanceof Double) {
+//            baseLatitude = (double) latitudeValue;
+//        }
+//        if (longitudeValue != null && longitudeValue instanceof Double) {
+//            baseLongitude = (double) longitudeValue;
+//        }
+
+        final float baseAltitude = 20.0f;
+        builder.autoFlightSpeed(5f);
+        builder.maxFlightSpeed(10f);
+        builder.setExitMissionOnRCSignalLostEnabled(false);
+        builder.finishedAction(WaypointMissionFinishedAction.NO_ACTION);
+        builder.flightPathMode(WaypointMissionFlightPathMode.NORMAL);
+        builder.gotoFirstWaypointMode(WaypointMissionGotoWaypointMode.SAFELY);
+        builder.headingMode(WaypointMissionHeadingMode.AUTO);
+        builder.repeatTimes(1);
+        for (int j=0;j<pointList.size();j++){
+            String[] p = pointList.get(j).toString().split(",");
+            final Waypoint eachWaypoint = new Waypoint(Double.parseDouble(p[0]),Double.parseDouble(p[1]),flyAltitude);
+            waypointList.add(eachWaypoint);
+        }
+
+
+
+//        Random randomGenerator = new Random(System.currentTimeMillis());
+//        List<Waypoint> waypointList = new ArrayList<>();
+//        for (int i = 0; i < numberOfWaypoint; i++) {
+//            final double variation = (Math.floor(i / 4) + 1) * 2 * ONE_METER_OFFSET;
+//            final float variationFloat = (baseAltitude + (i + 1) * 2);
+//            final Waypoint eachWaypoint = new Waypoint(baseLatitude + variation * Math.pow(-1, i) * Math.pow(0, i % 2),
+//                    baseLongitude + variation * Math.pow(-1, (i + 1)) * Math.pow(0, (i + 1) % 2),
+//                    variationFloat);
+//            for (int j = 0; j < numberOfAction; j++) {
+//                final int randomNumber = randomGenerator.nextInt() % 6;
+//                switch (randomNumber) {
+//                    case 0:
+//                        eachWaypoint.addAction(new WaypointAction(WaypointActionType.STAY, 1));
+//                        break;
+//                    case 1:
+//                        eachWaypoint.addAction(new WaypointAction(WaypointActionType.START_TAKE_PHOTO, 1));
+//                        break;
+//                    case 2:
+//                        eachWaypoint.addAction(new WaypointAction(WaypointActionType.START_RECORD, 1));
+//                        eachWaypoint.addAction(new WaypointAction(WaypointActionType.STOP_RECORD, 1));
+//                        break;
+//                    case 3:
+//                        eachWaypoint.addAction(new WaypointAction(WaypointActionType.GIMBAL_PITCH,
+//                                randomGenerator.nextInt() % 45 - 45));
+//                        break;
+//                    case 4:
+//                        eachWaypoint.addAction(new WaypointAction(WaypointActionType.ROTATE_AIRCRAFT,
+//                                randomGenerator.nextInt() % 180));
+//                        break;
+//                    default:
+//                        eachWaypoint.addAction(new WaypointAction(WaypointActionType.START_TAKE_PHOTO, 1));
+//                        break;
+//                }
+//            }
+//            waypointList.add(eachWaypoint);
+//        }
+
+        builder.waypointList(waypointList).waypointCount(waypointList.size());
+        return builder.build();
+    }
+
+    //设置弹窗dialog，用于测试waypoint任务
+    private void createWayPointDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(CompleteWidgetActivity.this);
+        builder.setTitle("WayPointTask");
+        builder.setMessage("要执行WayPoint任务吗?");
+        //点击对话框以外的区域是否让对话框消失
+        builder.setCancelable(false);
+        //设置正面按钮
+        builder.setPositiveButton("是的", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                //Toast.makeText(context, "你点击了是的", Toast.LENGTH_SHORT).show();
+                dialog.dismiss();
+                flyAltitude = Float.parseFloat(Client.waypoint_altitude);
+                double lat = Float.parseFloat(Client.waypoint_latitude);
+                double lng = Float.parseFloat(Client.waypoint_longitude);
+                ArrayList tempList = new ArrayList();
+                tempList.add((lat+0.0004)+","+(lng+0.0004)); // point1
+                tempList.add((lat+0.0009)+","+(lng+0.0008)); // point2
+                tempList.add((lat+0.0013)+","+(lng+0.0015)); // point3
+
+                execute_waypoint_task( 0, tempList);//load waypoint task
+                showNormalDialog("666");
+            }
+        });
+        //设置反面按钮
+        builder.setNegativeButton("不是", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                //Toast.makeText(context, "你点击了不是", Toast.LENGTH_SHORT).show();
+                dialog.dismiss();
+            }
+        });
+
+        wayPointDialog = builder.create();
+        //显示对话框
+        //dialog.show();
     }
 
 }

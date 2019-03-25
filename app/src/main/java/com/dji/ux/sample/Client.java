@@ -47,6 +47,9 @@ public class Client {
     private boolean mStart = true;
     private Handler handler;//回传消息的handler
     private Boolean isRecording = false;
+    public static String waypoint_longitude;
+    public static String waypoint_latitude;
+    public static String waypoint_altitude;
 
 
     public Client(Aircraft product,int port,String address,Handler mainHandler) {
@@ -79,6 +82,12 @@ public class Client {
                         GPSJson.put("longitude", String.valueOf(location.getLongitude()));
                         GPSJson.put("latitude", String.valueOf(location.getLatitude()));
                         GPSJson.put("altitude", String.valueOf(location.getAltitude()));
+
+                        //执行waypoint的test代码
+                        waypoint_longitude = String.valueOf(location.getLongitude());
+                        waypoint_latitude = String.valueOf(location.getLatitude());
+                        waypoint_altitude = String.valueOf(location.getAltitude());
+
 //                        String temp2 = "longitude:"+String.valueOf(location.getLongitude())+",latitude:"+String.valueOf(location.getLatitude())+",altitude:"+String.valueOf(location.getAltitude())+"\n";
 //                        write_txt+=temp2;
 //                        if (isRecording){
@@ -348,4 +357,5 @@ public class Client {
         msg.setData(bundleData);
         handler.sendMessage(msg);
     }
+    //TODO
 }
