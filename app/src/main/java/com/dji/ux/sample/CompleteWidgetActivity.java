@@ -530,6 +530,7 @@ public class CompleteWidgetActivity extends Activity {
                         @Override
                         public void onResult(DJIError djiError) {
                             showResultToast(djiError.getDescription());
+                            MainActivity.writetxt("\nLoad result: "+djiError.getDescription(),true);
                         }
                     });
                 } else {
@@ -543,6 +544,7 @@ public class CompleteWidgetActivity extends Activity {
                         @Override
                         public void onResult(DJIError djiError) {
                             showResultToast(djiError.getDescription());
+                            MainActivity.writetxt("\nExecution result: "+djiError.getDescription(),true);
                         }
                     });
                 } else {
@@ -576,7 +578,7 @@ public class CompleteWidgetActivity extends Activity {
 //        }
 
         final float baseAltitude = 20.0f;
-        builder.autoFlightSpeed(5f);
+        builder.autoFlightSpeed(3f);
         builder.maxFlightSpeed(10f);
         builder.setExitMissionOnRCSignalLostEnabled(false);
         builder.finishedAction(WaypointMissionFinishedAction.NO_ACTION);
@@ -649,13 +651,24 @@ public class CompleteWidgetActivity extends Activity {
                 flyAltitude = Float.parseFloat(Client.waypoint_altitude);
                 double lat = Float.parseFloat(Client.waypoint_latitude);
                 double lng = Float.parseFloat(Client.waypoint_longitude);
-                ArrayList tempList = new ArrayList();
-                tempList.add((lat+0.0004)+","+(lng+0.0004)); // point1
-                tempList.add((lat+0.0009)+","+(lng+0.0008)); // point2
-                tempList.add((lat+0.0013)+","+(lng+0.0015)); // point3
+                ArrayList tempList = new ArrayList();//longtitude经度，lat维度
+                double lat1 = lat+0.0001;
+                double lng1 = lng;
+                double lat2 =lat1;
+                double lng2 =lng1+0.0001;
+                double lat3 =lat2-0.0001;
+                double lng3 =lng2;
+                double lat4 =lat3;
+                double lng4 =lng3-0.0001;
+                tempList.add(lat1+","+lng1); // point1
+                tempList.add(lat2+","+lng2); // point2
+                tempList.add(lat3+","+lng3); // point3
+                tempList.add(lat4+","+lng4); // point4
 
                 execute_waypoint_task( 0, tempList);//load waypoint task
                 showNormalDialog("666");
+                MainActivity.writetxt("WayPoints List: \n",true);
+                MainActivity.writetxt(tempList.toString(),true);
             }
         });
         //设置反面按钮

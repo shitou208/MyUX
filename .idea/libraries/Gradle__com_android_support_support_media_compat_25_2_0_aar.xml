@@ -1,17 +1,17 @@
 <component name="libraryTable">
   <library name="Gradle: com.android.support:support-media-compat:25.2.0@aar">
     <ANNOTATIONS>
-      <root url="jar://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/support-media-compat-25.2.0.aar/c4441ff57765ee291bffa215dced4412/annotations.zip!/" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/support-media-compat-25.2.0.aar/4621bad1190772870389c7b988a84974/annotations.zip!/" />
     </ANNOTATIONS>
     <CLASSES>
-      <root url="file://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/support-media-compat-25.2.0.aar/c4441ff57765ee291bffa215dced4412/res" />
-      <root url="jar://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/support-media-compat-25.2.0.aar/c4441ff57765ee291bffa215dced4412/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/support-media-compat-25.2.0.aar/4621bad1190772870389c7b988a84974/res" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/support-media-compat-25.2.0.aar/4621bad1190772870389c7b988a84974/jars/classes.jar!/" />
     </CLASSES>
     <JAVADOC>
-      <root url="jar://D:/android-sdk-windows/extras/android/m2repository/com/android/support/support-media-compat/25.2.0/support-media-compat-25.2.0-javadoc.jar!/" />
+      <root url="jar://F:/android-sdk-windows/extras/android/m2repository/com/android/support/support-media-compat/25.2.0/support-media-compat-25.2.0-javadoc.jar!/" />
     </JAVADOC>
     <SOURCES>
-      <root url="jar://D:/android-sdk-windows/extras/android/m2repository/com/android/support/support-media-compat/25.2.0/support-media-compat-25.2.0-sources.jar!/" />
+      <root url="jar://F:/android-sdk-windows/extras/android/m2repository/com/android/support/support-media-compat/25.2.0/support-media-compat-25.2.0-sources.jar!/" />
     </SOURCES>
   </library>
 </component>

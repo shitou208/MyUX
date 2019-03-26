@@ -306,7 +306,7 @@ public class Client {
         mStart = false;
     }
 
-
+    // the test json string, only for test
     JSONObject testJson(){
         JSONObject jsonObject_test = new JSONObject();
 

@@ -1,8 +1,8 @@
 <component name="libraryTable">
   <library name="Gradle: com.dji:library-anti-distortion:4.7@aar">
     <CLASSES>
-      <root url="jar://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/library-anti-distortion-4.7.aar/c92abdee7817f36a3b789269691850f2/jars/classes.jar!/" />
-      <root url="file://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/library-anti-distortion-4.7.aar/c92abdee7817f36a3b789269691850f2/res" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/library-anti-distortion-4.7.aar/1a1600f1fec3553224b10d2e1a193a9f/res" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/library-anti-distortion-4.7.aar/1a1600f1fec3553224b10d2e1a193a9f/jars/classes.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />
