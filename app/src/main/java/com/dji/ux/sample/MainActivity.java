@@ -336,7 +336,7 @@ public class MainActivity extends Activity implements View.OnClickListener, Popu
                 .show();
     }
     /***
-     * 脱机调试，写日志文件
+     * 脱机调试，写日志文件,test demo
      * */
     public static void writetxt(String str,Boolean isAppend) {
         String filePath = null;

@@ -92,16 +92,23 @@ public class CompleteWidgetActivity extends Activity {
             switch (msg.what) {
                 case 1:
                     String sss = msg.getData().getString("rece");
-                    //showNormalDialog(sss);
-                    //MainActivity.writetxt(sss+"\n\n",true);
-                    myPointList = getWayPoints(sss);
+                    if(gettaskFlag(sss)==0){
+                        mClient.takeoff();
+                    }
+                    else {
+                        //showNormalDialog(sss);
+                        MainActivity.writetxt("\nReceived WayPoints data:\n",true);
+                        MainActivity.writetxt(sss+"\n",true);
+                        myPointList = getWayPoints(sss);
+                        MainActivity.writetxt("\nParse point list from json data:\n",true);
+                        MainActivity.writetxt(myPointList+"\n",true);
 //                    for(int k=0;k<myPointList.size();k++){
 //                        MainActivity.writetxt(myPointList.get(k).toString()+"\n",true);
 //                        showNormalDialog(myPointList.get(k).toString());
 //                    }
-                    execute_waypoint_task(0,myPointList);//load waypoint task
-                    showNormalDialog("666");
-
+                        execute_waypoint_task(0,myPointList);//load waypoint task
+                        showNormalDialog("666");
+                    }
                     //showNormalDialog(msg.getData().getString("rece"));
                     break;
             }
@@ -178,6 +185,7 @@ public class CompleteWidgetActivity extends Activity {
         });
 
         updateSecondaryVideoVisibility();
+        MainActivity.writetxt("**************************\n",true);
 
         //test
 //        myPointList = getWayPoints(js);
@@ -187,18 +195,20 @@ public class CompleteWidgetActivity extends Activity {
 //            showNormalDialog(myPointList.get(i).toString());
 //            MainActivity.writetxt(myPointList.get(i).toString()+"\n",true);
 //        }
-        createWayPointDialog();
-        final Handler handler2 = new Handler();
-        Runnable runnable2 = new Runnable() {
-            @Override
-            public void run() {
-                handler2.postDelayed(this, 60000);
-                wayPointDialog.show();
-                //timer_tv_2.setText("Timer2-->" + getSystemTime());
-                //mytext.setText(getDatePoor());
-            }
-        };
-        handler2.postDelayed(runnable2, 60000);
+        //延时弹窗，用于测试waypoint任务
+//        createWayPointDialog();
+//        final Handler handler2 = new Handler();
+//        Runnable runnable2 = new Runnable() {
+//            @Override
+//            public void run() {
+//                handler2.postDelayed(this, 60000);
+//                wayPointDialog.show();
+//                //timer_tv_2.setText("Timer2-->" + getSystemTime());
+//                //mytext.setText(getDatePoor());
+//            }
+//        };
+//        handler2.postDelayed(runnable2, 60000);
+        //mytest();
     }
 
     private void onViewClick(View view) {
@@ -511,6 +521,16 @@ public class CompleteWidgetActivity extends Activity {
         }
         return points;
     }
+    private int gettaskFlag(String jsons){
+        int num = -1;
+        try {
+            JSONObject jsonObject = new JSONObject(jsons);
+            num = jsonObject.getInt("mission");//0,takeoff; 1,waypoint
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return num;
+    }
 
     //执行waypoint任务
     private void execute_waypoint_task(int flag,ArrayList pointList){ //0 load, 1 start
@@ -521,6 +541,7 @@ public class CompleteWidgetActivity extends Activity {
         switch (flag) {
             case 0:
                 // Example of loading a Mission
+                System.out.println("**** load waypoint ****");
                 mission = createWaypointMission(pointList);
                 DJIError djiError = waypointMissionOperator.loadMission(mission);
                 // Example of uploading a Mission
@@ -544,7 +565,7 @@ public class CompleteWidgetActivity extends Activity {
                         @Override
                         public void onResult(DJIError djiError) {
                             showResultToast(djiError.getDescription());
-                            MainActivity.writetxt("\nExecution result: "+djiError.getDescription(),true);
+                            MainActivity.writetxt("\nExecution result:"+djiError.getDescription(),true);
                         }
                     });
                 } else {
@@ -553,6 +574,18 @@ public class CompleteWidgetActivity extends Activity {
                 break;
         }
     }
+
+    //起飞任务
+//    private void takeoff(){
+//        Aircraft myproduct = (Aircraft) mProduct;
+//        myproduct.getFlightController().startPrecisionTakeoff(new CommonCallbacks.CompletionCallback() {
+//            @Override
+//            public void onResult(DJIError djiError) {
+//                showResultToast(djiError.getDescription());
+//                MainActivity.writetxt("\nTakeoff result: "+djiError.getDescription(),true);
+//            }
+//        });
+//    }
 
     private void proData(String s){
         s=s.replace(" ","");
@@ -563,6 +596,7 @@ public class CompleteWidgetActivity extends Activity {
     }
 
     private WaypointMission createWaypointMission(ArrayList pointList) {
+        System.out.println("**** create waypoints ****");
         WaypointMission.Builder builder = new WaypointMission.Builder();
         List<Waypoint> waypointList = new ArrayList<>();
 //        double baseLatitude = 22;
@@ -586,9 +620,13 @@ public class CompleteWidgetActivity extends Activity {
         builder.gotoFirstWaypointMode(WaypointMissionGotoWaypointMode.SAFELY);
         builder.headingMode(WaypointMissionHeadingMode.AUTO);
         builder.repeatTimes(1);
+        System.out.println("pointlist size:"+pointList.size());
         for (int j=0;j<pointList.size();j++){
             String[] p = pointList.get(j).toString().split(",");
+            System.out.println("out："+p[0]+","+p[1]);
             final Waypoint eachWaypoint = new Waypoint(Double.parseDouble(p[0]),Double.parseDouble(p[1]),flyAltitude);
+            System.out.println("mission info: "+eachWaypoint.toString()+", altitude:"+eachWaypoint.altitude);
+            MainActivity.writetxt("\ncreate mission:"+eachWaypoint.toString()+", altitude:"+eachWaypoint.altitude,true);
             waypointList.add(eachWaypoint);
         }
 
@@ -683,6 +721,36 @@ public class CompleteWidgetActivity extends Activity {
         wayPointDialog = builder.create();
         //显示对话框
         //dialog.show();
+    }
+
+    //写死json字符串，进行解析测试
+    private void mytest(){
+//        String sss = "{\n" +
+//                "    \"0Lat\": 36.654081,\n" +
+//                "    \"0Lng\": 117.033885,\n" +
+//                "    \"altitude\": 8.800000190734863,\n" +
+//                "    \"way_point_num\": 1\n" +
+//                "}";
+        String sss = "{\n" +
+                "    \"0Lat\": 36.654081,\n" +
+                "    \"0Lng\": 117.033885,\n" +
+                "    \"1Lat\": 36.654023,\n" +
+                "    \"1Lng\": 117.035753,\n" +
+                "    \"altitude\": 8.800000190734863,\n" +
+                "    \"way_point_num\": 2\n" +
+                "}";
+
+        //MainActivity.writetxt("Received WayPoints List:\n",true);
+        //MainActivity.writetxt(sss+"\n\n",true);
+        flyAltitude = 8.800000190734863f;
+        myPointList = getWayPoints(sss);
+        System.out.println("debug:"+myPointList);
+//                    for(int k=0;k<myPointList.size();k++){
+//                        MainActivity.writetxt(myPointList.get(k).toString()+"\n",true);
+//                        showNormalDialog(myPointList.get(k).toString());
+//                    }
+        execute_waypoint_task(0,myPointList);//load waypoint task
+        showNormalDialog("666");
     }
 
 }

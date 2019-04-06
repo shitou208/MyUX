@@ -1,5 +1,6 @@
 package com.dji.ux.sample;
 
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
@@ -23,11 +24,13 @@ import java.io.*;
 
 import dji.common.battery.BatteryState;
 import dji.common.camera.SystemState;
+import dji.common.error.DJIError;
 import dji.common.flightcontroller.Attitude;
 import dji.common.flightcontroller.FlightControllerState;
 import dji.common.flightcontroller.GPSSignalLevel;
 import dji.common.flightcontroller.LocationCoordinate3D;
 import dji.common.gimbal.GimbalState;
+import dji.common.util.CommonCallbacks;
 import dji.sdk.battery.Battery;
 import dji.sdk.products.Aircraft;
 import android.os.Handler;
@@ -37,7 +40,7 @@ import android.os.Message;
 import static java.lang.Thread.sleep;
 
 public class Client {
-    private static final String TAG = "Client";
+    private static final String TAG = "MyClient";
 //    private static final String HOST_NAME = "172.20.10.4";
 //    private static final int PORT_NUM = 6666;
 
@@ -79,9 +82,12 @@ public class Client {
                     }
                     if(flightControllerState.getAircraftLocation() != null) {
                         LocationCoordinate3D location = flightControllerState.getAircraftLocation();
-                        GPSJson.put("longitude", String.valueOf(location.getLongitude()));
-                        GPSJson.put("latitude", String.valueOf(location.getLatitude()));
-                        GPSJson.put("altitude", String.valueOf(location.getAltitude()));
+//                        GPSJson.put("longitude", String.valueOf(location.getLongitude()));
+//                        GPSJson.put("latitude", String.valueOf(location.getLatitude()));
+//                        GPSJson.put("altitude", String.valueOf(location.getAltitude()));
+                        GPSJson.put("longitude", location.getLongitude());
+                        GPSJson.put("latitude", location.getLatitude());
+                        GPSJson.put("altitude", location.getAltitude());
 
                         //执行waypoint的test代码
                         waypoint_longitude = String.valueOf(location.getLongitude());
@@ -96,14 +102,14 @@ public class Client {
                     }
                     if(flightControllerState.getAttitude() != null) {
                         Attitude attitude = flightControllerState.getAttitude();
-                        GPSJson.put("pitch", String.valueOf(attitude.pitch));
-                        GPSJson.put("roll", String.valueOf(attitude.roll));
-                        GPSJson.put("yaw", String.valueOf(attitude.yaw));
+                        GPSJson.put("pitch", attitude.pitch);
+                        GPSJson.put("roll", attitude.roll);
+                        GPSJson.put("yaw", attitude.yaw);
                     }
 
-                    GPSJson.put("velocityX", String.valueOf(flightControllerState.getVelocityX()));
-                    GPSJson.put("velocityY", String.valueOf(flightControllerState.getVelocityY()));
-                    GPSJson.put("velocityZ", String.valueOf(flightControllerState.getVelocityZ()));
+                    GPSJson.put("velocityX", flightControllerState.getVelocityX());
+                    GPSJson.put("velocityY", flightControllerState.getVelocityY());
+                    GPSJson.put("velocityZ", flightControllerState.getVelocityZ());
 
                     // Update the values in GPS key
                     jsonObject.put("GPS", GPSJson);
@@ -306,6 +312,16 @@ public class Client {
         mStart = false;
     }
 
+    //起飞任务
+    void takeoff(){
+        mProduct.getFlightController().startTakeoff(new CommonCallbacks.CompletionCallback() {
+            @Override
+            public void onResult(DJIError djiError) {
+                //MainActivity.writetxt("\nTakeoff result: "+djiError.getDescription(),true);
+            }
+        });
+    }
+
     // the test json string, only for test
     JSONObject testJson(){
         JSONObject jsonObject_test = new JSONObject();
@@ -357,5 +373,4 @@ public class Client {
         msg.setData(bundleData);
         handler.sendMessage(msg);
     }
-    //TODO
 }
