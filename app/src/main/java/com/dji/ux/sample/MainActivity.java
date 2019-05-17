@@ -365,4 +365,13 @@ public class MainActivity extends Activity implements View.OnClickListener, Popu
         Date date = new Date(System.currentTimeMillis());
         return simpleDateFormat.format(date);
     }
+    public void showToast(String msg){
+        Toast.makeText(this,msg,Toast.LENGTH_SHORT).show();
+    }
+
+    public static String getCurrentTimeStr(){
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String dateString = simpleDateFormat.format(new Date());
+        return dateString;
+    }
 }

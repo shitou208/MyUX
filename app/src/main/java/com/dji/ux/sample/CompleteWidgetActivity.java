@@ -92,8 +92,23 @@ public class CompleteWidgetActivity extends Activity {
             switch (msg.what) {
                 case 1:
                     String sss = msg.getData().getString("rece");
-                    if(gettaskFlag(sss)==0){
+                    int task = gettaskFlag(sss);
+                    //showResultToast("task:"+task);
+                    MainActivity.writetxt("Received data:"+sss+",   taskFlag:"+task+"\n",true);
+                    MainActivity.writetxt("Received task flag "+task+"\n",true);
+                    if(task==0){
                         mClient.takeoff();
+                    }
+                    else if(task==2){
+                        //virtual stick task
+                        mClient.testTaskStart();
+                        float [] resnums = getThreeFloat(msg.getData().getString("rece"));
+                        mClient.sendVirtualStickData(resnums[0],resnums[1],resnums[2],resnums[3]);
+                    }
+                    else if(task==3){
+                        //virtual stick stop
+                        //MainActivity.writetxt("Received task flag 3\n",true);
+                        mClient.stopSendVirtualStick();
                     }
                     else {
                         //showNormalDialog(sss);
@@ -120,7 +135,7 @@ public class CompleteWidgetActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_default_widgets);
-
+        MainActivity.writetxt("************* Log Start("+MainActivity.getCurrentTimeStr()+") *************\n",true);
         height = DensityUtil.dip2px(this, 100);
         width = DensityUtil.dip2px(this, 150);
         margin = DensityUtil.dip2px(this, 12);
@@ -183,9 +198,17 @@ public class CompleteWidgetActivity extends Activity {
                 showInputDialog();
             }
         });
+        btn_setip.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                //Toast.makeText(CompleteWidgetActivity.this,"VirtualStick测试任务开始",Toast.LENGTH_SHORT).show();
+                //mClient.testTaskStart();
+                return false;
+            }
+        });
 
         updateSecondaryVideoVisibility();
-        MainActivity.writetxt("**************************\n",true);
+        //MainActivity.writetxt("**************************\n",true);
 
         //test
 //        myPointList = getWayPoints(js);
@@ -209,6 +232,7 @@ public class CompleteWidgetActivity extends Activity {
 //        };
 //        handler2.postDelayed(runnable2, 60000);
         //mytest();
+        //mClient.takeoff();
     }
 
     private void onViewClick(View view) {
@@ -281,6 +305,7 @@ public class CompleteWidgetActivity extends Activity {
 
     @Override
     protected void onDestroy() {
+        MainActivity.writetxt("*********************** Log End ***********************\n\n",true);
         mapWidget.onDestroy();
         super.onDestroy();
     }
@@ -521,11 +546,25 @@ public class CompleteWidgetActivity extends Activity {
         }
         return points;
     }
+    private float[] getThreeFloat(String jsons){
+        //String[] rr = jsons.split("\\{");
+        float [] numResult = {0,0,0,0};
+        try {
+            JSONObject jsonObject = new JSONObject(jsons);
+            numResult[0] = (float) jsonObject.getDouble("pitch");
+            numResult[1] = (float) jsonObject.getDouble("roll");
+            numResult[2] = (float) jsonObject.getDouble("yaw");
+            numResult[3] = (float) jsonObject.getDouble("throttle");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return numResult;
+    }
     private int gettaskFlag(String jsons){
         int num = -1;
         try {
             JSONObject jsonObject = new JSONObject(jsons);
-            num = jsonObject.getInt("mission");//0,takeoff; 1,waypoint
+            num = jsonObject.getInt("mission");//0,takeoff; 1,waypoint; 2 virtual stick(yaw,pitch,roll,-1~1 3 关闭)
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -752,5 +791,21 @@ public class CompleteWidgetActivity extends Activity {
         execute_waypoint_task(0,myPointList);//load waypoint task
         showNormalDialog("666");
     }
+
+//    private void sendVirtualStickData(){
+//        FlightControlData controlData = new FlightControlData();
+//        controlData.setPitch();
+//        controlData.setRoll();
+//        controlData.setYaw();
+//
+//        mProduct.getFlightController().sendVirtualStickFlightControlData(controlData,new CommonCallbacks.CompletionCallback() {
+//            @Override
+//            public void onResult(DJIError djiError) {
+//                //MainActivity.writetxt("\nTakeoff result: "+djiError.getDescription(),true);
+//                System.out.println("sendVirtualStick回调函数执行");
+//            }
+//        });
+//    }
+
 
 }

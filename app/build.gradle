@@ -65,8 +65,8 @@ dependencies {
     implementation 'com.amap.api:3dmap:5.5.0'
     implementation 'com.amap.api:search:5.5.0'
     implementation 'com.amap.api:location:3.6.1'
-    compile 'com.yarolegovich:lovely-dialog:1.1.0'
-    compile 'ch.ielse:switchbutton:1.0.1'
+    implementation 'com.yarolegovich:lovely-dialog:1.1.0'
+    implementation 'ch.ielse:switchbutton:1.0.1'
 
     //HERE maps
     implementation files('libs/HERE-sdk.aar')

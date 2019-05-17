@@ -20,6 +20,8 @@ import java.util.Date;
 import java.util.List;
 import java.net.*;
 import java.io.*;
+import java.util.Timer;
+import java.util.TimerTask;
 
 
 import dji.common.battery.BatteryState;
@@ -29,13 +31,20 @@ import dji.common.flightcontroller.Attitude;
 import dji.common.flightcontroller.FlightControllerState;
 import dji.common.flightcontroller.GPSSignalLevel;
 import dji.common.flightcontroller.LocationCoordinate3D;
+import dji.common.flightcontroller.virtualstick.FlightControlData;
+import dji.common.flightcontroller.virtualstick.FlightCoordinateSystem;
+import dji.common.flightcontroller.virtualstick.RollPitchControlMode;
+import dji.common.flightcontroller.virtualstick.VerticalControlMode;
+import dji.common.flightcontroller.virtualstick.YawControlMode;
 import dji.common.gimbal.GimbalState;
 import dji.common.util.CommonCallbacks;
 import dji.sdk.battery.Battery;
+import dji.sdk.flightcontroller.FlightController;
 import dji.sdk.products.Aircraft;
 import android.os.Handler;
 import android.os.Bundle;
 import android.os.Message;
+import android.widget.Toast;
 
 import static java.lang.Thread.sleep;
 
@@ -53,6 +62,11 @@ public class Client {
     public static String waypoint_longitude;
     public static String waypoint_latitude;
     public static String waypoint_altitude;
+
+    private float mPitch, mRoll, mYaw, mThrottle;
+    private Timer mSendVirtualStickDataTimer,testTimer;
+    private SendVirtualStickDataTask mSendVirtualStickDataTask;
+    private FlightController testFlightController;
 
 
     public Client(Aircraft product,int port,String address,Handler mainHandler) {
@@ -318,6 +332,97 @@ public class Client {
             @Override
             public void onResult(DJIError djiError) {
                 //MainActivity.writetxt("\nTakeoff result: "+djiError.getDescription(),true);
+                System.out.println("takeoff回调函数执行");
+            }
+        });
+    }
+
+    void testTaskStart(){
+        if(testFlightController == null){
+            testFlightController =  mProduct.getFlightController();
+            testFlightController.setRollPitchControlMode(RollPitchControlMode.VELOCITY);
+            testFlightController.setYawControlMode(YawControlMode.ANGULAR_VELOCITY);
+            testFlightController.setVerticalControlMode(VerticalControlMode.VELOCITY);
+            testFlightController.setRollPitchCoordinateSystem(FlightCoordinateSystem.BODY);
+
+            testFlightController.setVirtualStickModeEnabled(true, new CommonCallbacks.CompletionCallback() {
+                @Override
+                public void onResult(DJIError djiError) {
+                    if (djiError != null){
+                        //new MainActivity().showToast(djiError.getDescription());
+                        MainActivity.writetxt("testTaskStart()::"+djiError.getDescription()+"\n",true);
+                        //Toast.makeText();
+                    }else
+                    {
+                        //new MainActivity().showToast("Enable Virtual Stick Success");
+                        MainActivity.writetxt("testTaskStart()::Enable Virtual Stick Success\n",true);
+                        //showToast("Enable Virtual Stick Success");
+                    }
+                }
+            });
+        }
+
+//        TimerTask task = new TimerTask() {
+//            @Override
+//            public void run() {
+//                sendVirtualStickData(0.5f,0.5f,0.5f);
+//            }
+//        };
+//        testTimer = new Timer();
+//        testTimer.schedule(task, 0, 200);//每隔200ms调用一次sendVirtualStickData()
+
+    }
+    /** Called when the joystick is touched.
+     * @ pX The x coordinate of the knob. Values are between -1 (left) and 1 (right).
+     * @ pY The y coordinate of the knob. Values are between -1 (down) and 1 (up).
+     */
+    void sendVirtualStickData(float pitch,float roll,float yaw,float throttle){
+
+        float pitchJoyControlMaxSpeed = 10;
+        float rollJoyControlMaxSpeed = 10;
+        mPitch = (float)(pitchJoyControlMaxSpeed * pitch);
+        mRoll = (float)(rollJoyControlMaxSpeed * roll);
+
+        float verticalJoyControlMaxSpeed = 2;
+        float yawJoyControlMaxSpeed = 30;
+        mYaw = (float)(yawJoyControlMaxSpeed * yaw);
+        mThrottle = (float)(verticalJoyControlMaxSpeed * throttle);
+
+        if (null == mSendVirtualStickDataTimer) {
+            mSendVirtualStickDataTask = new SendVirtualStickDataTask();
+            mSendVirtualStickDataTimer = new Timer();
+            mSendVirtualStickDataTimer.schedule(mSendVirtualStickDataTask, 0, 100);
+        }
+
+    }
+
+    void stopSendVirtualStick(){
+        testFlightController.setVirtualStickModeEnabled(false, new CommonCallbacks.CompletionCallback() {
+            @Override
+            public void onResult(DJIError djiError) {
+                if (djiError != null){
+                    //new MainActivity().showToast(djiError.getDescription());
+                    MainActivity.writetxt("stopSendVirtualStick()::"+djiError.getDescription()+"\n",true);
+                    //Toast.makeText();
+                }
+                else {
+                    //new MainActivity().showToast("Enable Virtual Stick Success");
+                    MainActivity.writetxt("stopSendVirtualStick()::Disable Virtual Stick Success\n",true);
+                    //showToast("Enable Virtual Stick Success");
+                    if (null != mSendVirtualStickDataTimer) {
+//                        mSendVirtualStickDataTask.cancel();
+//                        mSendVirtualStickDataTask = null;
+//                        testFlightController = null;
+                        mSendVirtualStickDataTask.cancel();
+                        mSendVirtualStickDataTask = null;
+                        mSendVirtualStickDataTimer.cancel();
+                        mSendVirtualStickDataTimer.purge();
+                        mSendVirtualStickDataTimer = null;
+
+                        testFlightController = null;
+                    }
+
+                }
             }
         });
     }
@@ -372,5 +477,35 @@ public class Client {
         bundleData.putString("rece", receive);
         msg.setData(bundleData);
         handler.sendMessage(msg);
+    }
+
+
+    class SendVirtualStickDataTask extends TimerTask {
+
+        @Override
+        public void run() {
+
+            if (testFlightController != null) {
+//                try {
+//                    Thread.sleep(5000);
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+                testFlightController.sendVirtualStickFlightControlData(
+                        new FlightControlData(
+                                mPitch, mRoll, mYaw, mThrottle
+                        ), new CommonCallbacks.CompletionCallback() {
+                            @Override
+                            public void onResult(DJIError djiError) {
+                                if (djiError != null){
+                                    //new MainActivity().showToast(djiError.getDescription());
+                                    MainActivity.writetxt(djiError.getDescription(),true);
+                                    //Toast.makeText();
+                                }
+                            }
+                        }
+                );
+            }
+        }
     }
 }
